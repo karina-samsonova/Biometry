@@ -1,26 +1,38 @@
 package com.example.biometry
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.biometry.databinding.ActivityCameraBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
+typealias PhotoListener = (success: Boolean, hint: String, photo: ImageProxy) -> Unit
 
 class CameraActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityCameraBinding
@@ -33,18 +45,20 @@ class CameraActivity : AppCompatActivity() {
 
     private val activityResultLauncher =
         registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions())
+            ActivityResultContracts.RequestMultiplePermissions()
+        )
         { permissions ->
-            // Handle Permission granted/rejected
             var permissionGranted = true
             permissions.entries.forEach {
                 if (it.key in REQUIRED_PERMISSIONS && !it.value)
                     permissionGranted = false
             }
             if (!permissionGranted) {
-                Toast.makeText(baseContext,
+                Toast.makeText(
+                    baseContext,
                     "Permission request denied",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 startCamera()
             }
@@ -55,14 +69,12 @@ class CameraActivity : AppCompatActivity() {
         viewBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             requestPermissions()
         }
 
-        // Set up the listeners for take photo and video capture buttons
         viewBinding.buttonImageCapture.setOnClickListener { takePhoto() }
 
         viewBinding.buttonCameraSelector.setOnClickListener { flipCamera() }
@@ -73,21 +85,15 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePhoto() {
-        // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
-
-        // Create a file to save the photo
         val photoFile = createPhotoFile(applicationContext)
 
         val metadata = ImageCapture.Metadata().apply {
             isReversedHorizontal = (userCameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA)
         }
-        // Prepare the output file options for the ImageCapture use case
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
             .setMetadata(metadata).build()
 
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -96,41 +102,32 @@ class CameraActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
-                override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     output.savedUri?.let {
-                        startActivity(PhotoPreviewActivity.newIntent(this@CameraActivity, it))
+                        //startActivity(PhotoPreviewActivity.newIntent(this@CameraActivity, it))
+                        val dialog = PreviewDialog(it)
+                        dialog.show(supportFragmentManager, "")
                     }
                 }
             }
         )
     }
 
-    // Helper function to create a file in the external storage directory for the photo
     private fun createPhotoFile(context: Context): File {
-        // Obtain the directory for saving the photo
         val outputDirectory = getOutputDirectory(context)
-        // Create a new file in the output directory with a unique name
         return File(outputDirectory, photoFileName()).apply {
-            // Ensure the file's parent directory exists
             parentFile?.mkdirs()
         }
     }
 
-    // Generates a unique file name for the photo based on the current timestamp
     private fun photoFileName() =
         SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
             .format(System.currentTimeMillis()) + ".jpg"
 
-    // Determines the best directory for saving the photo, preferring external but falling back to internal storage
     private fun getOutputDirectory(context: Context): File {
-        // Attempt to use the app-specific external storage directory which does not require permissions
         val mediaDir = context.getExternalFilesDir(null)?.let {
             File(it, context.resources.getString(R.string.app_name)).apply { mkdirs() }
         }
-        // Fallback to internal storage if the external directory is not available
         return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
     }
 
@@ -142,15 +139,14 @@ class CameraActivity : AppCompatActivity() {
         startCamera()
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private fun startCamera() {
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
@@ -160,18 +156,35 @@ class CameraActivity : AppCompatActivity() {
             imageCapture = ImageCapture.Builder()
                 .build()
 
-            // Select back camera as a default
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, PhotoAnalyzer { success, hint, photo ->
+                        if (success) {
+                            viewBinding.imageViewCameraFrame.setImageDrawable(
+                                resources.getDrawable(
+                                    R.drawable.camera_frame_green
+                                )
+                            )
+                            viewBinding.analyzerHint.text = hint
+                            cameraProvider.unbind(it)
+                            //TODO: set photo to imageViewPreview
+                        } else {
+                            viewBinding.analyzerHint.text = hint
+                        }
+                    })
+                }
+
             val cameraSelector = userCameraSelector
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
+                    this, cameraSelector, preview, imageCapture, imageAnalyzer
+                )
 
-            } catch(exc: Exception) {
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
@@ -184,7 +197,8 @@ class CameraActivity : AppCompatActivity() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onDestroy() {
@@ -196,7 +210,7 @@ class CameraActivity : AppCompatActivity() {
         private const val TAG = "Biometry"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
-            mutableListOf (
+            mutableListOf(
                 android.Manifest.permission.CAMERA,
                 android.Manifest.permission.RECORD_AUDIO
             ).apply {

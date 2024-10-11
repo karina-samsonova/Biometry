@@ -13,9 +13,7 @@ class MainActivity : AppCompatActivity() {
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        viewBinding.buttonTakePhoto.setOnClickListener {
-            val intent: Intent = CameraActivity.newIntent(this)
-            startActivity(intent)
-        }
+        val intent: Intent = RegistrationActivity.newIntent(this)
+        startActivity(intent)
     }
 }
