@@ -218,6 +218,10 @@ class AssistantCameraActivity : AppCompatActivity(), TextToSpeech.OnInitListener
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+        if (tts != null) {
+            tts!!.stop()
+            tts!!.shutdown()
+        }
     }
 
     companion object {
@@ -225,8 +229,7 @@ class AssistantCameraActivity : AppCompatActivity(), TextToSpeech.OnInitListener
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
             mutableListOf(
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.RECORD_AUDIO
+                android.Manifest.permission.CAMERA
             ).apply {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)

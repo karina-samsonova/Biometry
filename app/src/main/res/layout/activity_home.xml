@@ -43,29 +43,82 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/maxDialog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="250dp"
+        android:layout_height="360dp"
         android:layout_margin="20dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
-            android:layout_width="250dp"
-            android:layout_height="300dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:backgroundTint="#EDF2FE"
             app:cardCornerRadius="20dp"
             app:cardElevation="4dp"
-            app:layout_constraintBottom_toBottomOf="@id/cardView"
-            app:layout_constraintEnd_toEndOf="@id/cardView"
-            app:layout_constraintStart_toStartOf="@id/cardView"
-            app:layout_constraintTop_toTopOf="@id/cardView">
+            android:layout_marginBottom="60dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <ImageView
+                    android:id="@+id/buttonCancelMaxDialog"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/max_cross"
+                    android:layout_margin="20dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/max_title"
+                    app:layout_constraintBottom_toBottomOf="@id/buttonCancelMaxDialog"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/buttonCancelMaxDialog" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:background="@drawable/rounded_white"
+                    android:padding="8dp"
+                    android:textColor="@color/black"
+                    android:text="@string/max_greeting"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonCancelMaxDialog" />
+
+                <EditText
+                    android:id="@+id/editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:paddingEnd="40dp"
+                    android:background="@drawable/rounded_white"
+                    android:hint="Введите текст"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="8dp"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:layout_editor_absoluteX="21dp" />
+
+                <ImageView
+                    android:id="@+id/buttonSpeak"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/microphone"
+                    android:layout_marginEnd="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintBottom_toBottomOf="@+id/editText"
+                    app:layout_constraintEnd_toEndOf="@+id/editText"
+                    app:layout_constraintTop_toTopOf="@+id/editText"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -76,7 +129,7 @@
             android:layout_height="80dp"
             android:elevation="8dp"
             android:src="@drawable/max_ic"
-            app:layout_constraintBottom_toBottomOf="@id/cardView"
+            android:layout_marginTop="-20dp"
             app:layout_constraintEnd_toEndOf="@id/cardView"
             app:layout_constraintStart_toStartOf="@id/cardView"
             app:layout_constraintTop_toBottomOf="@id/cardView" />
