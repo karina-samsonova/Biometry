@@ -5,4 +5,8 @@
     <string name="stop_capture">Stop Capture</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="max_first_phrase">Привет, я помогу тебе сделать подходящее фото. Будет всего 3 правила. Давай начнём!</string>
+    <string name="max_second_phrase">Правило 1: Лицо смотрит в анфас, фон белый без текстуры</string>
+    <string name="max_third_phrase">Когда фото будет готово, рамка станет зелёной и ты услышишь колокольчик. Приступим!</string>
+
 </resources>

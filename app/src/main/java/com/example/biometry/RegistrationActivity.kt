@@ -19,16 +19,14 @@ class RegistrationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityRegistrationBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_registration)
+        setContentView(viewBinding.root)
 
-        val buttonTakePhoto = findViewById<AppCompatButton>(R.id.buttonTakePhoto)
-        buttonTakePhoto.setOnClickListener {
+        viewBinding.buttonTakePhoto.setOnClickListener {
             val intent: Intent = CameraActivity.newIntent(this)
             startActivity(intent)
         }
 
-        val buttonCancel = findViewById<TextView>(R.id.buttonCancel)
-        buttonCancel.setOnClickListener {
+        viewBinding.buttonCancel.setOnClickListener {
             finish()
         }
     }

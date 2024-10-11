@@ -22,11 +22,11 @@ class PhotoAnalyzer(private val listener: PhotoListener) : ImageAnalysis.Analyze
 
         //TODO: implement server interaction
         CoroutineScope(Dispatchers.Main).launch {
-            delay(3000)
+            delay(4000)
             listener(false, "Проверьте освещение, чтобы лицо было четко видно", image)
-            delay(3000)
+            delay(4000)
             listener(false, "Пожалуйста, убедитесь, что ваше лицо находится в рамке", image)
-            delay(3000)
+            delay(4000)
             listener(true, "Фото успешно сделано", image)
             image.close()
         }

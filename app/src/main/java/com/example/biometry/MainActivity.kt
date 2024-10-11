@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        val intent: Intent = RegistrationActivity.newIntent(this)
+        val intent: Intent = AssistantRegistrationActivity.newIntent(this)
         startActivity(intent)
     }
 }

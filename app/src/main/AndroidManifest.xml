@@ -21,6 +21,12 @@
         android:theme="@style/Theme.Biometry"
         tools:targetApi="31">
         <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AssistantCameraActivity"
+            android:exported="false" />
+        <activity
             android:name=".AssistantRegistrationActivity"
             android:exported="false" />
         <activity
